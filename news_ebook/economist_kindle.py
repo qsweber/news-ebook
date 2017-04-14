@@ -4,6 +4,7 @@ import functools
 import os
 import requests
 
+import boto3
 from bs4 import BeautifulSoup
 
 from news_ebook.article import new_article, new_paragraph
@@ -17,14 +18,39 @@ SECTIONS_TO_EXCLUDE = [
 BASE_URL = 'http://www.economist.com'
 
 
+def _get_base_dir():
+    try:
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    except:
+        return os.environ['PWD'] + '/news-ebook'
+
+
 def _get_auth():
     if 'ECONOMIST_USERNAME' not in os.environ:
-        with open('/vagrant/news-ebook/.pass', 'r') as fh:
+        with open(os.path.join(_get_base_dir(), '.pass'), 'r') as fh:
             lines = fh.readlines()
             os.environ['ECONOMIST_USERNAME'] = lines[0].strip()
             os.environ['ECONOMIST_PASSWORD'] = lines[1].strip()
 
     return (os.environ['ECONOMIST_USERNAME'], os.environ['ECONOMIST_PASSWORD'])
+
+
+def _get_boto():
+    with open(os.path.join(_get_base_dir(), '.boto'), 'r') as fh:
+        lines = fh.readlines()
+        access_key_id = lines[0].strip()
+        secret_access_key = lines[1].strip()
+
+    return access_key_id, secret_access_key
+
+
+def _get_email_address():
+    with open(os.path.join(_get_base_dir(), '.email'), 'r') as fh:
+        lines = fh.readlines()
+        from_address = lines[0].strip()
+        to_address = lines[1].strip()
+
+    return from_address, to_address
 
 
 def _get_complete_url(url):
@@ -124,16 +150,64 @@ def _get_issue_from_url(issue_url):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--week', required=True)
+    parser.add_argument('--week', required=False)
     cli_args = parser.parse_args()
 
-    issue_url = os.path.join(BASE_URL, 'printedition/{}'.format(
-        cli_args.week,
-    ))
+    if cli_args.week:
+        week = cli_args.week
+    else:
+        today = datetime.date.today()
+        if today.weekday() >= 4:
+            week = today - datetime.timedelta(today.weekday()) + datetime.timedelta(6)
+        else:
+            week = today - datetime.timedelta(today.weekday()) - datetime.timedelta(2)
+
+        week = week.strftime('%Y-%m-%d')
+
+    issue_url = os.path.join(BASE_URL, 'printedition/{}'.format(week))
+
+    print('Scraping {}'.format(issue_url))
 
     issue = _get_issue_from_url(issue_url)
 
     html_output = issue_as_html(issue)
 
-    with open('/vagrant/Economist: {}.html'.format(issue.title), 'w') as fh:
-        fh.write(html_output)
+    access_key_id, secret_access_key = _get_boto()
+    client = boto3.client(
+        'ses',
+        region_name='us-west-2',
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+    )
+
+    from_address, to_address = _get_email_address()
+
+    raw_message = '''From: {from_address}
+To: {to_address}
+Subject: doc
+MIME-Version: 1.0
+Content-type: Multipart/Mixed; boundary="NextPart"
+
+--NextPart
+Content-Type: text/plain
+
+See attachment.
+
+--NextPart
+Content-Type: text/plain;
+Content-Disposition: attachment; filename="{filename}"
+
+{content}
+
+--NextPart--'''.format(
+        from_address=from_address,
+        to_address=to_address,
+        filename='Economist: {}.html'.format(issue.title),
+        content=html_output
+    )
+
+    response = client.send_raw_email(
+        Destinations=[
+        ],
+        RawMessage={'Data': raw_message.encode()},
+    )

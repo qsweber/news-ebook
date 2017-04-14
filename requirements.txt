@@ -1,3 +1,4 @@
+boto3
 BeautifulSoup4
 requests
 unidecode

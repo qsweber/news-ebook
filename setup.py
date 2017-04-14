@@ -10,6 +10,7 @@ setup(
     packages=find_packages(exclude=('tests',)),
     install_requires=(
         'BeautifulSoup4',
+        'boto3',
     ),
     entry_points={
         'console_scripts': (
