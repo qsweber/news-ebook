@@ -26,4 +26,4 @@ Then simply run this command every Friday:
 
 I set a CRON job on a remote server to run this command for me:
 
-```5 5 * * 5 economist-kindle > /home/ubuntu/news_ebook_logs.txt```
+```5 5 * * 5 economist-kindle```
