@@ -2,8 +2,8 @@ from setuptools import find_packages, setup
 
 setup(
     name='news-ebook',
-    version='0.0.1',
-    description='fill in',
+    version='0.0.2',
+    description='send news articles to an e-reader',
     author='Quinn Weber',
     maintainer='Quinn Weber',
     maintainer_email='quinnsweber@gmail.com',

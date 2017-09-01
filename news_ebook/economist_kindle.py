@@ -18,39 +18,25 @@ SECTIONS_TO_EXCLUDE = [
 BASE_URL = 'http://www.economist.com'
 
 
-def _get_base_dir():
-    try:
-        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    except:
-        return os.environ['PWD'] + '/news-ebook'
-
-
 def _get_auth():
-    if 'ECONOMIST_USERNAME' not in os.environ:
-        with open(os.path.join(_get_base_dir(), '.pass'), 'r') as fh:
-            lines = fh.readlines()
-            os.environ['ECONOMIST_USERNAME'] = lines[0].strip()
-            os.environ['ECONOMIST_PASSWORD'] = lines[1].strip()
-
-    return (os.environ['ECONOMIST_USERNAME'], os.environ['ECONOMIST_PASSWORD'])
+    return (
+        os.environ['ECONOMIST_USERNAME'],
+        os.environ['ECONOMIST_PASSWORD'],
+    )
 
 
 def _get_boto():
-    with open(os.path.join(_get_base_dir(), '.boto'), 'r') as fh:
-        lines = fh.readlines()
-        access_key_id = lines[0].strip()
-        secret_access_key = lines[1].strip()
-
-    return access_key_id, secret_access_key
+    return (
+        os.environ['AWS_ACCESS_KEY_ID'],
+        os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
 
 
 def _get_email_address():
-    with open(os.path.join(_get_base_dir(), '.email'), 'r') as fh:
-        lines = fh.readlines()
-        from_address = lines[0].strip()
-        to_address = lines[1].strip()
-
-    return from_address, to_address
+    return (
+        os.environ['FROM_ADDRESS'],
+        os.environ['TO_ADDRESS'],
+    )
 
 
 def _get_complete_url(url):
