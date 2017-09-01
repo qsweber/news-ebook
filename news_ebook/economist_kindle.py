@@ -197,3 +197,5 @@ Content-Disposition: attachment; filename="{filename}"
         ],
         RawMessage={'Data': raw_message.encode()},
     )
+
+    return response
