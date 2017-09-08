@@ -144,7 +144,7 @@ def main():
     else:
         today = datetime.date.today()
         if today.weekday() >= 4:
-            week = today - datetime.timedelta(today.weekday()) + datetime.timedelta(6)
+            week = today - datetime.timedelta(today.weekday()) + datetime.timedelta(5)
         else:
             week = today - datetime.timedelta(today.weekday()) - datetime.timedelta(2)
 
