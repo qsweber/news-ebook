@@ -1,0 +1,9 @@
+.scrape_cache/*
+.tox/*
+.cache/*
+.my_clippings.txt
+.pass
+.email
+.boto
+*.pyc
+news_ebook.egg-info/*
