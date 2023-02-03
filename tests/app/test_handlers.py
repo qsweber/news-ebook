@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-import service_template.app.http as module
+import news_ebook.app.http as module
 
 
 @pytest.fixture
