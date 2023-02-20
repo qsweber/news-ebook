@@ -7,4 +7,6 @@ pytest
 pytest-mock
 pytest-cov
 python-coveralls
+types-beautifulsoup4
+types-requests
 zappa
