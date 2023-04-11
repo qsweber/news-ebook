@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <ul>
+        {% for section in sections %}
+        <li>
+            <a href=#{{ section.id }}>{{ section.title }}</a>
+            <ul>
+                {% for article in section.articles %}
+                <li>
+                    <a href=#{{ article.id }}>{{ article.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    <h1>{{ title }}</h1>
+    <div>
+        {% for section in sections %}
+        <div class="section">
+            <h2 id="{{ section.id }}">{{ section.title }}</h2>
+            {% for article in section.articles %}
+            <div class="article">
+                <h3 id="{{ article.id }}">{{ article.title }}</h3>
+                {% for paragraph in article.paragraphs %}
+                <div>
+                    {% if paragraph.header is not None %}
+                    <h4>{{ paragraph.header }}</h4>
+                    {% endif %}
+                    {% if paragraph.text is not None %}
+                    <p>{{ paragraph.text }}</p>
+                    {% endif %}
+                    {% if paragraph.image_path is not None %}
+                    <img src="{{ paragraph.image_path }}" alt="Italian Trulli">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>

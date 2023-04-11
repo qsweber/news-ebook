@@ -1,10 +1,10 @@
 from typing import NamedTuple
 
-from news_ebook.clients.sqs import SqsClient
+from news_ebook.clients.ses import SesClient
 
 
 class Clients(NamedTuple):
-    sqs: SqsClient
+    ses: SesClient
 
 
 class ServiceContext(NamedTuple):
@@ -13,6 +13,6 @@ class ServiceContext(NamedTuple):
 
 service_context = ServiceContext(
     clients=Clients(
-        sqs=SqsClient(),
+        ses=SesClient(),
     )
 )

@@ -1,7 +1,0 @@
-BeautifulSoup4
-Boto3
-Flask
-jsonschema
-raven[flask]
-schemaorg
-werkzeug
