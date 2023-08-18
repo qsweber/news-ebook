@@ -6,6 +6,7 @@ from raven.transport.requests import RequestsHTTPTransport  # type: ignore
 
 from news_ebook.app.service_context import service_context
 from news_ebook.lib.news_source.economist import Economist
+from news_ebook.lib.output import Output
 
 
 sentry = Client(transport=RequestsHTTPTransport)
@@ -27,3 +28,5 @@ def cronHandler(func: typing.Callable[[], None]) -> typing.Callable[[], None]:
 def economist_kindle() -> None:
     economist = Economist()
     issue = economist.get_latest()
+    output = Output()
+    html_path = output.to_html(issue)

@@ -455,6 +455,18 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-types"
+version = "0.17.0"
+description = "Type stubs for Django"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "django-types-0.17.0.tar.gz", hash = "sha256:c1c42ab78876c57c728342d5ab060725ab371fc8dc83bb85bae0be06846aad70"},
+    {file = "django_types-0.17.0-py3-none-any.whl", hash = "sha256:43d4931159524c1a08b25c1b9a4db2512b7c1234b64b1d4db4aff78881d6afd0"},
+]
+
+[[package]]
 name = "durationpy"
 version = "0.5"
 description = "Module for converting between datetime.timedelta and Go's Duration strings."
@@ -1768,4 +1780,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "03df44278a853834fc55e1d7650b39809fae63de19c6d27907497126bbdd9f10"
+content-hash = "ae422aaec52d905abc6c3510ba37ec209819d677367aa02238131e4a55f861bb"

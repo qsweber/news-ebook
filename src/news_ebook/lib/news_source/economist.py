@@ -77,9 +77,20 @@ def _parse_and_scrape(article: TocArticle) -> Article:
     print(parsed["image"])
 
     img_data = requests.get(parsed["image"]).content
-    local_image_path = "/tmp/{}".format(os.path.basename(parsed["image"]))
+    local_image_path = "output/images/{}".format(os.path.basename(parsed["image"]))
     with open(local_image_path, "wb") as handler:
         handler.write(img_data)
+
+    text = parsed["articleBody"]
+
+    paragraphs = [
+        Paragraph(
+            header=None,
+            image_path=None,
+            text=paragraph,
+        )
+        for paragraph in text.split("\n")
+    ]
 
     return Article(
         title=parsed["headline"],
@@ -87,21 +98,17 @@ def _parse_and_scrape(article: TocArticle) -> Article:
         paragraphs=[
             Paragraph(
                 header=None,
-                image_path=local_image_path,
+                image_path=local_image_path.strip("output/"),
                 text=None,
             ),
-            Paragraph(
-                header=None,
-                image_path=None,
-                text=parsed["articleBody"],
-            ),
+            *paragraphs,
         ],
     )
 
 
 class Economist(NewsSource):
     def get_latest(self) -> Issue:
-        date = "2023-01-28"
+        date = "2023-07-29"
 
         sections = scrape_toc(date)
         issue = Issue(
@@ -110,11 +117,14 @@ class Economist(NewsSource):
                 Section(
                     title=section.title,
                     articles=[
-                        _parse_and_scrape(article) for article in section.articles
+                        _parse_and_scrape(article)
+                        for article in section.articles
+                        if not article.link.startswith("/interactive")
                     ],
                 )
                 for section in sections
                 if section.title != "Economic & financial indicators"
+                and section.title != "Graphic detail"
             ],
         )
 

@@ -1,8 +1,5 @@
 import logging
 import json
-import typing
-
-from jsonschema import validate  # type: ignore
 
 from flask import Flask, jsonify, request, Response
 from raven import Client  # type: ignore
@@ -27,4 +24,4 @@ def status() -> Response:
     response = jsonify({"text": "ok"})
     response.headers.add("Access-Control-Allow-Origin", "*")
 
-    return typing.cast(Response, response)
+    return response

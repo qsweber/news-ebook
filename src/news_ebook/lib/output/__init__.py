@@ -11,7 +11,7 @@ issue = economist.get_latest()
 
 class Output:
     def to_html(self, issue: Issue) -> str:
-        template = engine.get_template("foo.html")
+        template = engine.get_template("basic.html")
         context = Context(
             {
                 "title": issue.title,
@@ -41,7 +41,7 @@ class Output:
         )
         result = template.render(context)
 
-        with open("bar.html", "w") as f:
+        with open("output/economist.html", "w") as f:
             f.write(result)
 
-        return "bar.html"
+        return "output/economist.html"

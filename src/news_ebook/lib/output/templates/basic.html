@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <body>
     <ul>
@@ -33,7 +34,7 @@
                     <p>{{ paragraph.text }}</p>
                     {% endif %}
                     {% if paragraph.image_path is not None %}
-                    <img src="{{ paragraph.image_path }}" alt="Italian Trulli">
+                    <img src="{{ paragraph.image_path }}">
                     {% endif %}
                 </div>
                 {% endfor %}

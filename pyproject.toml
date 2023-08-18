@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "news-ebook"
 version = "0.1.0"
-description = "Template for backend services"
+description = "Scrapes news and converts it to an ebook, and emails to your Kindle."
 authors = ["Quinn Weber <quinn@quinnweber.com>"]
 readme = "README.md"
 packages = [
@@ -17,6 +17,7 @@ raven = {extras = ["flask"], version = "^6.10.0"}
 zappa = "^0.56.1"
 beautifulsoup4 = "^4.11.2"
 django = "^4.2"
+django-types = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
