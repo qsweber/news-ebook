@@ -18,6 +18,7 @@ zappa = "^0.56.1"
 beautifulsoup4 = "^4.11.2"
 django = "^4.2"
 django-types = "^0.17.0"
+ebooklib = "^0.18"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
