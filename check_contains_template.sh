@@ -1,0 +1,1 @@
+TERM=xterm-256color git branch --contains $(git ls-remote https://github.com/qsweber/service-template.git | grep refs/heads/master | cut -f 1)

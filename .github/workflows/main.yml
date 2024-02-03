@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '45 21 * * 4'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      STAGE: TEST
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+      - uses: snok/install-poetry@v1
+      - run: poetry lock --check
+      - run: poetry install
+      - run: poetry run pytest --cov src/news_ebook --cov-report term --cov-report html
+      - run: poetry run black --check .
+      - run: poetry run mypy src/news_ebook --strict --txt-report .mypy && cat .mypy/index.txt
+      - run: sh check_contains_template.sh
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      STAGE: test
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-west-2
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - uses: snok/install-poetry@v1
+      - run: poetry install --only main
+      - run: cd src && poetry run zappa update dev -s ../zappa_settings.json && cd ..
+      - run: cd src && poetry run zappa update production -s ../zappa_settings.json && cd ..
+        if: |
+          github.event_name == 'push' ||
+          github.event_name == 'schedule'

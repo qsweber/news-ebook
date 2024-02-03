@@ -1,0 +1,21 @@
+{
+    "production": {
+        "app_function": "news_ebook.app.http.app",
+        "aws_region": "us-west-2",
+        "project_name": "news-ebook",
+        "runtime": "python3.9",
+        "s3_bucket": "zappa-w4zj9g9gr",
+        "log_level": "INFO",
+        "timeout_seconds": 55,
+        "events": [
+            {
+                "function": "news_ebook.app.handlers.time_driven_task",
+                "expression": "cron(18 3 ? * * *)",
+                "enabled": false
+            }
+        ],
+        "aws_environment_variables": {
+            "STAGE": "PROD"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "editor.tabSize": 4,
+  "python.envFile": "${workspaceRoot}/.venv",
+  "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python",
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyArgs": [
+    "--strict"
+  ],
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "none",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "cSpell.ignoreWords": [
+    "boto3",
+    "ebooklib",
+    "jsonify"
+  ]
+}
