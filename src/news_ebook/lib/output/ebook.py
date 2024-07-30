@@ -54,8 +54,8 @@ class Output(BaseOutput):
                 book.add_item(chapter)
                 chapters.append(chapter)
                 all_chapters.append(chapter)
-            foo = (epub.Section(section.title), tuple(chapters))
-            sections.append(foo)
+
+            sections.append((epub.Section(section.title), tuple(chapters)))
 
         book.toc = tuple(sections)
 

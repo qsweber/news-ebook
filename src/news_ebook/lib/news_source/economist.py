@@ -1,11 +1,12 @@
 import os
 import json
-import functools
 import requests
 from bs4 import BeautifulSoup
 
 import typing
-from news_ebook.lib.soup import get_soup_for_url, find_tag, find_tags
+
+from news_ebook.clients.economist import EconomistClient
+from news_ebook.lib.soup import find_tag, find_tags
 from news_ebook.lib.news_source import Paragraph, Article, Section, Issue, NewsSource
 
 
@@ -19,18 +20,10 @@ class TocSection(typing.NamedTuple):
     articles: typing.List[TocArticle]
 
 
-@functools.lru_cache()
-def _scrape(link: str) -> BeautifulSoup:
-    return get_soup_for_url(
-        "http://www.economist.com{}".format(link),
-        (os.environ["ECONOMIST_USERNAME"], os.environ["ECONOMIST_PASSWORD"]),
-    )
-
-
-def scrape_toc(date: str) -> typing.List[TocSection]:
+def scrape_toc(economist_client: EconomistClient, date: str) -> typing.List[TocSection]:
     issue_url = "/printedition/{}".format(date)
 
-    issue_soup = _scrape(issue_url)
+    issue_soup = BeautifulSoup(economist_client.get_url(issue_url).text, "html.parser")
 
     body = find_tag(issue_soup, "body")
 
@@ -64,23 +57,21 @@ def scrape_toc(date: str) -> typing.List[TocSection]:
     return [wtw, *sections]
 
 
-"""
-{
-    'type': 'IMAGE',
-    'url': 'https://www.example.com/20240127_FBD001.jpg',
-    'altText': 'Description', (TODO implement scraping this)
-    'mode': 'NORMAL',
-    'imageType': 'ILLUSTRATION',
-    'caption': {'textHtml': ''},
-    'credit': 'Foo',
-    'source': None,
-    'width': 1280,
-    'height': 720,
-}
-"""
-
-
 def get_image_paragraph(element: typing.Any) -> Paragraph:
+    """
+    {
+        'type': 'IMAGE',
+        'url': 'https://www.example.com/20240127_FBD001.jpg',
+        'altText': 'Description', (TODO implement scraping this)
+        'mode': 'NORMAL',
+        'imageType': 'ILLUSTRATION',
+        'caption': {'textHtml': ''},
+        'credit': 'Foo',
+        'source': None,
+        'width': 1280,
+        'height': 720,
+    }
+    """
     img_data = requests.get(element["url"]).content
     local_image_path = "output/images/{}".format(os.path.basename(element["url"]))
 
@@ -94,16 +85,14 @@ def get_image_paragraph(element: typing.Any) -> Paragraph:
     )
 
 
-"""
-{
-    'type': 'PARAGRAPH',
-    'text': 'Foo bar',
-    'textHtml': '<p>Foo bar</p>'
-}
-"""
-
-
 def get_text_paragraph(element: typing.Any) -> Paragraph:
+    """
+    {
+        'type': 'PARAGRAPH',
+        'text': 'Foo bar',
+        'textHtml': '<p>Foo bar</p>'
+    }
+    """
     return Paragraph(header=None, image_path=None, text=element["text"])
 
 
@@ -121,11 +110,22 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
     return None
 
 
-def _parse_and_scrape(article: TocArticle) -> typing.Optional[Article]:
+def _parse_and_scrape(
+    economist_client: EconomistClient, article: TocArticle
+) -> typing.Optional[Article]:
     print("Scraping {}".format(article.link))
-    article_soup = _scrape(article.link)
+    article_soup = BeautifulSoup(
+        economist_client.get_url(article.link).text, "html.parser"
+    )
 
-    parsed = json.loads(find_tag(article_soup, "script", {"id": "__NEXT_DATA__"}).text)
+    tag = None
+    try:
+        tag = find_tag(article_soup, "script", {"id": "__NEXT_DATA__"})
+    except Exception:
+        print("no __NEXT_DATA__ tag found")
+        return None
+
+    parsed = json.loads(tag.text)
     content = parsed["props"]["pageProps"]["cp2Content"]
 
     if not content:
@@ -145,10 +145,13 @@ def _parse_and_scrape(article: TocArticle) -> typing.Optional[Article]:
 
 
 class Economist(NewsSource):
-    def get_latest(self) -> Issue:
-        date = "2024-01-27"
+    def __init__(self, economist_client: EconomistClient):
+        self.economist_client = economist_client
 
-        sections = scrape_toc(date)
+    def get_latest(self) -> Issue:
+        date = "2024-07-27"
+
+        sections = scrape_toc(self.economist_client, date)
         issue = Issue(
             title="Economist {}".format(date),
             sections=[
@@ -157,7 +160,7 @@ class Economist(NewsSource):
                     articles=[
                         a
                         for a in [
-                            _parse_and_scrape(article)
+                            _parse_and_scrape(self.economist_client, article)
                             for article in section.articles
                             if not article.link.startswith("/interactive")
                         ]
