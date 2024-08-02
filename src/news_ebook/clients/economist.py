@@ -6,12 +6,12 @@ BASE_URL = "https://www.economist.com"
 
 
 @functools.lru_cache()
-def cached_get(session: Session, link: str) -> Response:
-    return session.get(link)
+def cached_get(s: Session, link: str) -> Response:
+    return s.get(link)
 
 
 class EconomistClient:
-    def __init__(self):
+    def __init__(self) -> None:
         self.session = session()
         self.session.headers.update({"User-Agent": "Mozilla/5.0"})
         self.session.cookies.update(
@@ -23,5 +23,5 @@ class EconomistClient:
             },
         )
 
-    def get_url(self, url):
-        return cached_get(self.session, "{}{}".format(BASE_URL, url))
+    def get_url(self, url: str) -> Response:
+        return cached_get(self.session, f"{BASE_URL}{url}")
