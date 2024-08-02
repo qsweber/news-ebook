@@ -110,6 +110,16 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
         }
         """
         return Paragraph(header=element["text"], image_path=None, text=None)
+    elif element["type"] == "BLOCK_QUOTE":
+        """
+        {
+            "type":"BLOCK_QUOTE",
+            "text":"test quote",
+            "textHtml":"\u003ci\u003etest quote\u003c/i\u003e",
+            "__typename":"BlockQuoteComponent"
+        }
+        """
+        return None
     elif element["type"] == "INFOBOX":
         return None
 
