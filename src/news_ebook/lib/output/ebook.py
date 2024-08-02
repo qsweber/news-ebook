@@ -1,8 +1,11 @@
 import os
+import re
 
 from news_ebook.lib.news_source import Issue
 from ebooklib import epub  # type: ignore
 from news_ebook.lib.output import Output as BaseOutput
+
+import typing
 
 
 class Output(BaseOutput):
@@ -19,14 +22,16 @@ class Output(BaseOutput):
         )
 
         sections = []
-        all_chapters = []
+        all_chapters: typing.List[epub.EpubHtml] = []
         image_counter = 1
         for section in issue.sections:
             chapters = []
             for article in section.articles:
                 chapter = epub.EpubHtml(
                     title=article.title,
-                    file_name="{}.xhtml".format(article.title),
+                    file_name="{}.xhtml".format(
+                        re.sub(r"\W+", "", article.title).lower()
+                    ),
                     lang="en",
                 )
                 content = "<h1>{}</h1>".format(article.title)
@@ -59,7 +64,11 @@ class Output(BaseOutput):
 
             sections.append((epub.Section(section.title), tuple(chapters)))
 
-        book.toc = tuple(sections)
+        # book.toc = tuple(sections)
+        book.toc = tuple(
+            epub.Link(chapter.file_name, chapter.title, chapter.title)
+            for chapter in all_chapters
+        )
 
         # add default NCX and Nav file
         book.add_item(epub.EpubNcx())

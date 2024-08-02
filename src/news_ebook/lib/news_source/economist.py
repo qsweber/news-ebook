@@ -1,8 +1,9 @@
+import io
 import os
 import json
 import requests
 from bs4 import BeautifulSoup
-
+from PIL import Image
 import typing
 
 from news_ebook.clients.economist import EconomistClient
@@ -57,7 +58,9 @@ def scrape_toc(economist_client: EconomistClient, date: str) -> typing.List[TocS
     return [wtw, *sections]
 
 
-def get_image_paragraph(element: typing.Any) -> Paragraph:
+def get_image_paragraph(
+    economist_client: EconomistClient, element: typing.Any
+) -> Paragraph:
     """
     {
         'type': 'IMAGE',
@@ -72,27 +75,34 @@ def get_image_paragraph(element: typing.Any) -> Paragraph:
         'height': 720,
     }
     """
-    img_data = requests.get(element["url"]).content
-    local_image_path = "output/images/{}".format(os.path.basename(element["url"]))
-
-    with open(local_image_path, "wb") as handler:
-        handler.write(img_data)
+    img = economist_client.get_img(element["url"])
+    desired_width = 600
+    resized_height = int(
+        (float(img.size[1]) * float(desired_width / float(img.size[0])))
+    )
+    img.thumbnail((desired_width, resized_height))
+    small_local_image_path = "output/images/small-{}".format(
+        os.path.basename(element["url"])
+    )
+    img.save(small_local_image_path)
 
     return Paragraph(
         header=None,
-        image_path=local_image_path.strip("output/"),
+        image_path=small_local_image_path.strip("output/"),
         text=None,  # Can I do alt-text?
         blockquote=None,
     )
 
 
-def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
+def get_paragraph(
+    economist_client: EconomistClient, element: typing.Any
+) -> typing.Optional[Paragraph]:
     if not element or not element["type"]:
         print("can not find: {}", json.dumps(element))
         return None
 
     if element["type"] == "IMAGE":
-        return get_image_paragraph(element)
+        return get_image_paragraph(economist_client, element)
     elif element["type"] == "PARAGRAPH":
         """
         {
@@ -155,6 +165,7 @@ def _parse_and_scrape(
     try:
         tag = find_tag(article_soup, "script", {"id": "__NEXT_DATA__"})
     except Exception:
+        # TODO handle this with a retry
         print("no __NEXT_DATA__ tag found")
         return None
 
@@ -162,6 +173,7 @@ def _parse_and_scrape(
     content = parsed["props"]["pageProps"]["cp2Content"]
 
     if not content:
+        # TODO handle this with a retry
         print("no cp2Content found")
         return None
 
@@ -173,7 +185,11 @@ def _parse_and_scrape(
     return Article(
         title=content["headline"],
         description=content["rubric"],
-        paragraphs=[p for p in [get_paragraph(element) for element in elements] if p],
+        paragraphs=[
+            p
+            for p in [get_paragraph(economist_client, element) for element in elements]
+            if p
+        ],
     )
 
 
