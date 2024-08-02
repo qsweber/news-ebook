@@ -4,6 +4,7 @@ from typing import NamedTuple, Optional, List
 class Paragraph(NamedTuple):
     header: Optional[str]
     text: Optional[str]
+    blockquote: Optional[str]
     image_path: Optional[str]
 
 

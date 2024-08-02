@@ -24,6 +24,7 @@ class Output(BaseOutput):
                                     {
                                         "header": paragraph.header,
                                         "text": paragraph.text,
+                                        "blockquote": paragraph.blockquote,
                                         "image_path": paragraph.image_path,
                                     }
                                     for paragraph in article.paragraphs

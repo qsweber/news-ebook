@@ -82,6 +82,7 @@ def get_image_paragraph(element: typing.Any) -> Paragraph:
         header=None,
         image_path=local_image_path.strip("output/"),
         text=None,  # Can I do alt-text?
+        blockquote=None,
     )
 
 
@@ -100,7 +101,9 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
             'textHtml': '<p>Foo bar</p>'
         }
         """
-        return Paragraph(header=None, image_path=None, text=element["text"])
+        return Paragraph(
+            header=None, blockquote=None, image_path=None, text=element["text"]
+        )
     elif element["type"] == "CROSSHEAD":
         """
         {
@@ -109,7 +112,12 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
             "__typename": "CrossheadComponent"
         }
         """
-        return Paragraph(header=element["text"], image_path=None, text=None)
+        return Paragraph(
+            header=element["text"],
+            image_path=None,
+            text=None,
+            blockquote=None,
+        )
     elif element["type"] == "BLOCK_QUOTE":
         """
         {
@@ -119,8 +127,16 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
             "__typename":"BlockQuoteComponent"
         }
         """
-        return None
+        return Paragraph(
+            header=None, image_path=None, blockquote=element["text"], text=None
+        )
     elif element["type"] == "INFOBOX":
+        return None
+    elif element["type"] == "INFOGRAPHIC":
+        return None
+    elif element["type"] == "PULL_QUOTE":
+        return None
+    elif element["type"] == "BOOK_INFO":
         return None
 
     print("can not parse: {}", json.dumps(element))

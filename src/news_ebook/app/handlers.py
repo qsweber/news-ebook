@@ -8,6 +8,7 @@ from raven.transport.requests import RequestsHTTPTransport  # type: ignore
 from news_ebook.app.service_context import service_context
 from news_ebook.lib.news_source.economist import Economist
 from news_ebook.lib.output.ebook import Output
+from news_ebook.lib.output.html import Output as HtmlOutput
 
 
 sentry = Client(transport=RequestsHTTPTransport)
@@ -34,6 +35,8 @@ def economist_kindle() -> None:
     issue = economist.get_latest()
     output = Output()
     ebook_output = output.get_output_path(issue)
+    html = HtmlOutput()
+    html.get_output_path(issue)
     service_context.clients.ses.send_email(
         os.environ["KINDLE_EMAIL"],
         os.environ["FROM_EMAIL"],
