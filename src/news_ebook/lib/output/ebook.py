@@ -31,9 +31,11 @@ class Output(BaseOutput):
                 )
                 content = "<h1>{}</h1>".format(article.title)
                 for paragraph in article.paragraphs:
+                    if paragraph.header:
+                        content += "<h4>{}</h4>".format(paragraph.header)
                     if paragraph.text:
                         content += "<p>{}</p>".format(paragraph.text)
-                    elif paragraph.image_path:
+                    if paragraph.image_path:
                         file_name = "static/{}".format(
                             os.path.basename(paragraph.image_path)
                         )

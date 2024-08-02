@@ -85,17 +85,6 @@ def get_image_paragraph(element: typing.Any) -> Paragraph:
     )
 
 
-def get_text_paragraph(element: typing.Any) -> Paragraph:
-    """
-    {
-        'type': 'PARAGRAPH',
-        'text': 'Foo bar',
-        'textHtml': '<p>Foo bar</p>'
-    }
-    """
-    return Paragraph(header=None, image_path=None, text=element["text"])
-
-
 def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
     if not element or not element["type"]:
         print("can not find: {}", json.dumps(element))
@@ -104,7 +93,25 @@ def get_paragraph(element: typing.Any) -> typing.Optional[Paragraph]:
     if element["type"] == "IMAGE":
         return get_image_paragraph(element)
     elif element["type"] == "PARAGRAPH":
-        return get_text_paragraph(element)
+        """
+        {
+            'type': 'PARAGRAPH',
+            'text': 'Foo bar',
+            'textHtml': '<p>Foo bar</p>'
+        }
+        """
+        return Paragraph(header=None, image_path=None, text=element["text"])
+    elif element["type"] == "CROSSHEAD":
+        """
+        {
+            "type": "CROSSHEAD",
+            "text": "A new competition",
+            "__typename": "CrossheadComponent"
+        }
+        """
+        return Paragraph(header=element["text"], image_path=None, text=None)
+    elif element["type"] == "INFOBOX":
+        return None
 
     print("can not parse: {}", json.dumps(element))
     return None
