@@ -1,12 +1,15 @@
 import os
+import re
 
 from news_ebook.lib.news_source import Issue
 from ebooklib import epub  # type: ignore
 from news_ebook.lib.output import Output as BaseOutput
 
+import typing
+
 
 class Output(BaseOutput):
-    def get_output_path(self, issue: Issue) -> str:
+    def get_output_path(self, issue: Issue, output_dir: str) -> str:
         book = epub.EpubBook()
 
         # set metadata
@@ -19,27 +22,31 @@ class Output(BaseOutput):
         )
 
         sections = []
-        all_chapters = []
+        all_chapters: typing.List[epub.EpubHtml] = []
         image_counter = 1
         for section in issue.sections:
             chapters = []
             for article in section.articles:
                 chapter = epub.EpubHtml(
                     title=article.title,
-                    file_name="{}.xhtml".format(article.title),
+                    file_name="{}.xhtml".format(
+                        re.sub(r"\W+", "", article.title).lower()
+                    ),
                     lang="en",
                 )
                 content = "<h1>{}</h1>".format(article.title)
                 for paragraph in article.paragraphs:
+                    if paragraph.header:
+                        content += "<h4>{}</h4>".format(paragraph.header)
                     if paragraph.text:
                         content += "<p>{}</p>".format(paragraph.text)
-                    elif paragraph.image_path:
+                    if paragraph.image_path:
                         file_name = "static/{}".format(
                             os.path.basename(paragraph.image_path)
                         )
-                        content += '<p><img src="{}"/></p>'.format(file_name)
+                        content += f'<p><img src="{file_name}"/></p>'
                         image_content = open(
-                            "output/{}".format(paragraph.image_path), "rb"
+                            f"{output_dir}/{paragraph.image_path}", "rb"
                         ).read()
                         img = epub.EpubImage(
                             uid="image_{}".format(image_counter),
@@ -54,10 +61,14 @@ class Output(BaseOutput):
                 book.add_item(chapter)
                 chapters.append(chapter)
                 all_chapters.append(chapter)
-            foo = (epub.Section(section.title), tuple(chapters))
-            sections.append(foo)
 
-        book.toc = tuple(sections)
+            sections.append((epub.Section(section.title), tuple(chapters)))
+
+        # book.toc = tuple(sections)
+        book.toc = tuple(
+            epub.Link(chapter.file_name, chapter.title, chapter.title)
+            for chapter in all_chapters
+        )
 
         # add default NCX and Nav file
         book.add_item(epub.EpubNcx())
@@ -67,7 +78,7 @@ class Output(BaseOutput):
         book.spine = ["nav", *all_chapters]
 
         # write to the file
-        output_file_name = "{}.epub".format(issue.title)
+        output_file_name = f"{output_dir}/{issue.title}.epub"
         epub.write_epub(output_file_name, book, {})
 
         return output_file_name

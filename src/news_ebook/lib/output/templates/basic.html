@@ -33,6 +33,9 @@
                     {% if paragraph.text is not None %}
                     <p>{{ paragraph.text }}</p>
                     {% endif %}
+                    {% if paragraph.blockquote is not None %}
+                    <blockquote>{{ paragraph.blockquote }}</blockquote>
+                    {% endif %}
                     {% if paragraph.image_path is not None %}
                     <img src="{{ paragraph.image_path }}">
                     {% endif %}

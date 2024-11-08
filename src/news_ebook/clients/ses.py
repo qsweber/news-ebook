@@ -1,6 +1,9 @@
 import os
 import boto3  # type: ignore
 import typing
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 
 class Attachment(typing.NamedTuple):
@@ -17,8 +20,6 @@ class SesClient:
         self.ses = boto3.client(
             "ses",
             region_name="us-west-2",
-            aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
         )
 
     def send_email(
@@ -27,38 +28,34 @@ class SesClient:
         from_address,
         subject: str,
         body: str,
-        attachment: Attachment,
+        attachment_path: str,
     ) -> None:
         if self.ses is None:
             return
 
-        raw_message = """From: {from_address}
-            To: {to_address}
-            Subject: {subject}
-            MIME-Version: 1.0
-            Content-type: Multipart/Mixed; boundary="NextPart"
+        msg = MIMEMultipart("mixed")
+        # Add subject, from and to lines.
+        msg["Subject"] = subject
+        msg["From"] = from_address
+        msg["To"] = to_address
 
-            --NextPart
-            Content-Type: text/plain
+        msg_body = MIMEMultipart("alternative")
+        msg_body.attach(MIMEText(body, "plain", "utf-8"))
 
-            {body}
-
-            --NextPart
-            Content-Type: text/plain;
-            Content-Disposition: attachment; filename="{filename}"
-
-            {content}
-
-            --NextPart--""".format(
-            from_address=from_address,
-            to_address=to_address,
-            subject=subject,
-            body=body,
-            filename=attachment.filename,
-            content=attachment.content,
+        att = MIMEApplication(open(attachment_path, "rb").read())
+        att.add_header(
+            "Content-Disposition",
+            "attachment",
+            filename=os.path.basename(attachment_path),
         )
 
+        msg.attach(msg_body)
+        msg.attach(att)
+
         return self.ses.send_raw_email(
-            Destinations=[],
-            RawMessage={"Data": raw_message.encode()},
+            Source=from_address,
+            Destinations=[to_address],
+            RawMessage={
+                "Data": msg.as_string(),
+            },
         )
