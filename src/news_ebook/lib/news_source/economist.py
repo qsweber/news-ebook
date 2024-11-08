@@ -2,9 +2,7 @@ import os
 import typing
 
 import json
-import requests
 from bs4 import BeautifulSoup
-import typing
 
 from news_ebook.clients.economist import EconomistClient
 from news_ebook.lib.soup import find_tag, find_tags
@@ -29,6 +27,7 @@ class Economist(NewsSource):
         self.economist_client = economist_client
         self.output_dir = output_dir
         self.issueDate = issueDate
+        self.cloudflare_misses = 0
 
     def get_latest(self) -> Issue:
         sections = self._scrape_toc(self.economist_client, self.issueDate)
@@ -56,6 +55,8 @@ class Economist(NewsSource):
                 )
             ],
         )
+
+        print(f"Cloudflare misses: {self.cloudflare_misses}")
 
         return issue
 
@@ -99,7 +100,7 @@ class Economist(NewsSource):
 
         return [wtw, *sections]
 
-    def _get_image_paragraph(self, element: typing.Any) -> Paragraph:
+    def _get_image_paragraph(self, element: typing.Any) -> typing.Optional[Paragraph]:
         """
         {
             'type': 'IMAGE',
@@ -114,21 +115,20 @@ class Economist(NewsSource):
             'height': 720,
         }
         """
-        img = self.economist_client.get_img(element["url"])
-        desired_width = 600
-        resized_height = int(
-            (float(img.size[1]) * float(desired_width / float(img.size[0])))
-        )
-        img.thumbnail((desired_width, resized_height))
         basename = os.path.join(self.output_dir, "images")
         os.makedirs(basename, exist_ok=True)
         filename = os.path.basename(element["url"])
-        small_local_image_path = f"{basename}/small-{filename}"
-        img.save(small_local_image_path)
+        local_image_path = os.path.join(basename, filename)
+        try:
+            self.economist_client.get_img(element["url"], local_image_path)
+        except SystemError:
+            print("Failed to download image")
+            self.cloudflare_misses += 1
+            return None
 
         return Paragraph(
             header=None,
-            image_path=small_local_image_path.strip(f"{self.output_dir}/"),
+            image_path=local_image_path.strip(f"{self.output_dir}/"),
             text=None,  # Can I do alt-text?
             blockquote=None,
         )

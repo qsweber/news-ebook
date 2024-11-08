@@ -19,6 +19,8 @@ beautifulsoup4 = "^4.11.2"
 django = "^4.2"
 django-types = "^0.17.0"
 ebooklib = "^0.18"
+pillow = "^11.0.0"
+ipdb = "^0.13.13"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
