@@ -41,3 +41,6 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = [
   ".", "src",
 ]
+
+[tool.pylint.MASTER]
+disable = "C0114,C0115,C0116"

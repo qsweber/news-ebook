@@ -6,8 +6,9 @@ from news_ebook.lib.output import Output as BaseOutput
 engine = Engine(dirs=["src/news_ebook/lib/output/templates"])
 
 
+# pylint: disable=too-few-public-methods
 class Output(BaseOutput):
-    def get_output_path(self, issue: Issue) -> str:
+    def get_output_path(self, issue: Issue, output_dir: str) -> str:
         template = engine.get_template("basic.html")
         context = Context(
             {
@@ -39,7 +40,7 @@ class Output(BaseOutput):
         )
         result = template.render(context)
 
-        with open("output/economist.html", "w") as f:
+        with open(f"{output_dir}/economist.html", "w", encoding="utf-8") as f:
             f.write(result)
 
         return "output/economist.html"

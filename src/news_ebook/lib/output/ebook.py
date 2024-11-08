@@ -9,7 +9,7 @@ import typing
 
 
 class Output(BaseOutput):
-    def get_output_path(self, issue: Issue) -> str:
+    def get_output_path(self, issue: Issue, output_dir: str) -> str:
         book = epub.EpubBook()
 
         # set metadata
@@ -44,9 +44,9 @@ class Output(BaseOutput):
                         file_name = "static/{}".format(
                             os.path.basename(paragraph.image_path)
                         )
-                        content += '<p><img src="{}"/></p>'.format(file_name)
+                        content += f'<p><img src="{file_name}"/></p>'
                         image_content = open(
-                            "output/{}".format(paragraph.image_path), "rb"
+                            f"{output_dir}/{paragraph.image_path}", "rb"
                         ).read()
                         img = epub.EpubImage(
                             uid="image_{}".format(image_counter),
@@ -78,7 +78,7 @@ class Output(BaseOutput):
         book.spine = ["nav", *all_chapters]
 
         # write to the file
-        output_file_name = "{}.epub".format(issue.title)
+        output_file_name = f"{output_dir}/{issue.title}.epub"
         epub.write_epub(output_file_name, book, {})
 
         return output_file_name
